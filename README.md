@@ -1,8 +1,14 @@
 # 百人牛牛 API Spec
 
-## Edit the documentation
+## Updating the documentation
 
-You can edit the documentation at https://editor.swagger.io/
+- Edit `swagger.yaml` at at https://editor.swagger.io/
+
+- After finish editing, File -> Save as YAML
+
+- Overwrite the existing YAML file
+
+- Commit
 
 ## Documentation url
 
