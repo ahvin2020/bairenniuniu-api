@@ -11,6 +11,24 @@ tags:
 - name: room chip
   description: Room chip operations
 paths:
+  /cards:
+    get:
+      tags:
+      - card
+      summary: Returns all cards info
+      description: Returns cards
+      operationId: /cards
+      parameters:
+      - $ref: '#/components/parameters/noCacheParam'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        500:
+          $ref: '#/components/responses/500InternalServerError'
   /rooms:
     get:
       tags:
@@ -32,6 +50,34 @@ paths:
 
 components:
   schemas:
+    Card:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Card id
+          example: 1
+        name:
+          type: string
+          description: Card name
+          example: "J_2 means Jack Club"
+        image_url:
+          type: string
+          description: Url of card image
+          example: 'Cards/CCard_Jclub_result'
+        points:
+          type: integer
+          description: Point of card. J, Q, K has 10 points
+          example: 10
+        suit:
+          type: integer
+          description: What suit does the card belongs to. Diamond 1, Club 2, Heart 3, Club 4
+          example: 2
+        rank:
+          type: integer
+          description: Rank of card
+          example: 11
     Room:
       type: object
       properties:
@@ -59,7 +105,7 @@ components:
         image_url:
           type: string
           description: Url of chip image,
-          example: "chip_20_blue_result"
+          example: "Chips/chip_20_blue_result"
         value:
           type: integer
           format: int64
