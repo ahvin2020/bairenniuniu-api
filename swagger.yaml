@@ -4,21 +4,26 @@ info:
   description: 'Server spec for 百人牛牛 card game.'
   version: 1.0.0
 servers:
-- url: http://localhost:9000/api/v1
+- url: http://localhost:9000
 tags:
+- name: auth
+  description: Authentication
+- name: card
+  description: Card operations
 - name: room
   description: Room operations
 - name: room chip
   description: Room chip operations
 paths:
-  /cards:
+  /api/v1/cards:
     get:
       tags:
       - card
       summary: Returns all cards info
       description: Returns cards
-      operationId: /cards
+      operationId: /api/v1/cards
       parameters:
+      - $ref: '#/components/parameters/tokenParam'
       - $ref: '#/components/parameters/noCacheParam'
       responses:
         200:
@@ -27,16 +32,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Card'
+        401:
+          $ref: '#/components/responses/401UnauthorizedError'
         500:
           $ref: '#/components/responses/500InternalServerError'
-  /rooms:
+  /api/v1/rooms:
     get:
       tags:
       - room
       summary: Returns all rooms info
       description: Returns rooms, room chips
-      operationId: /rooms
+      operationId: /api/v1/rooms
       parameters:
+      - $ref: '#/components/parameters/tokenParam'
       - $ref: '#/components/parameters/noCacheParam'
       responses:
         200:
@@ -45,9 +53,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Room'
+        401:
+          $ref: '#/components/responses/401UnauthorizedError'
         500:
           $ref: '#/components/responses/500InternalServerError'
-
+  /login:
+    post:
+      tags:
+      - auth
+      summary: Login to game
+      description: Login to game and retrieve a token
+      operationId: /login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                platform:
+                  type: string
+                  description: User's platform
+                  example: "933296"
+                platform_user_id:
+                  type: string
+                  description: User's platform user id
+                  example: "933296_user_5"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+  /auth/refresh_token:
+    get:
+      tags:
+      - auth
+      summary: Refresh API token
+      description: Returns a new API token
+      operationId: /auth/refresh_token
+      parameters:
+      - $ref: '#/components/parameters/tokenParam'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        401:
+          $ref: '#/components/responses/401UnauthorizedError'
+        500:
+          $ref: '#/components/responses/500InternalServerError'
 components:
   schemas:
     Card:
@@ -109,9 +167,24 @@ components:
         value:
           type: integer
           format: int64
-          description: Value of the chip,
+          description: Value of the chip
           example: 20
-
+    Token:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+          description: Status code
+          example: 200
+        expire:
+          type: string
+          description: Expiry time of the token
+          example: "2019-05-24T12:10:42+08:00"
+        value:
+          type: string
+          description: Auth token to access server api
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NTg2NzEwNDIsImlkIjoxLCJvcmlnX2lhdCI6MTU1ODU4NDY0Mn0.s7gefxoNus8YhEcbAvM6ZAGhEbqqR6XW53EDYy1Zm"
   parameters:
     noCacheParam:
       name: no_cache
@@ -122,7 +195,31 @@ components:
       schema:
         type: integer
         enum: [0, 1]
+    tokenParam:
+      name: Authorization
+      in: header
+      description: Auth token to access server api
+      example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NTg2NzEwNDIsImlkIjoxLCJvcmlnX2lhdCI6MTU1ODU4NDY0Mn0.s7gefxoNus8YhEcbAvM6ZAGhEbqqR6XW53EDYy1Zm"
+      required: true
+      schema:
+        type: string
   responses:
+    401UnauthorizedError:
+      description: Unauthorized error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              err_code:
+                type: integer
+                format: int
+                description: Error code
+                example: 401
+              message:
+                type: string
+                description: Description of the error
+                example: "Unauthorized"
     500InternalServerError:
       description: Internal server error
       content:
